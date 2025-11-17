@@ -11,16 +11,46 @@ Model name is converted to lowercase for the collection name:
 - BlogPost -> "blogs" collection
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, HttpUrl, EmailStr
+from typing import Optional, List, Literal
 
-# Example schemas (replace with your own):
+# -----------------------------------------------------------------------------
+# Listing schema for a secondhand marketplace
+# Collection name: "listing"
+# -----------------------------------------------------------------------------
+class ContactInfo(BaseModel):
+    name: Optional[str] = Field(None, description="Seller name")
+    email: Optional[EmailStr] = Field(None, description="Contact email")
+    phone: Optional[str] = Field(None, description="Contact phone number")
 
+class Listing(BaseModel):
+    title: str = Field(..., description="Listing title")
+    description: Optional[str] = Field(None, description="Detailed description")
+    category: Optional[str] = Field(None, description="Category like Furniture, Clothing, Electronics")
+    condition: Optional[Literal["Neu", "Wie neu", "Gut", "Okay", "Gebraucht"]] = Field(
+        None, description="Item condition in German"
+    )
+    brand: Optional[str] = Field(None, description="Brand/Label")
+    size: Optional[str] = Field(None, description="Size (for clothes/shoes)")
+    color: Optional[str] = Field(None, description="Primary color")
+    material: Optional[str] = Field(None, description="Main material")
+    price: float = Field(..., ge=0, description="Price amount")
+    currency: str = Field("EUR", description="Currency code, default EUR")
+    location: Optional[str] = Field(None, description="City or area")
+
+    delivery_options: List[str] = Field(
+        default_factory=list,
+        description="Delivery methods like Versand, Abholung, Treffen",
+    )
+    image_urls: List[str] = Field(default_factory=list, description="Image URLs")
+    tags: List[str] = Field(default_factory=list, description="Search tags")
+
+    contact: Optional[ContactInfo] = Field(None, description="Seller contact info")
+
+# -----------------------------------------------------------------------------
+# Example schemas kept for reference (not used directly by the app)
+# -----------------------------------------------------------------------------
 class User(BaseModel):
-    """
-    Users collection schema
-    Collection name: "user" (lowercase of class name)
-    """
     name: str = Field(..., description="Full name")
     email: str = Field(..., description="Email address")
     address: str = Field(..., description="Address")
@@ -28,10 +58,6 @@ class User(BaseModel):
     is_active: bool = Field(True, description="Whether user is active")
 
 class Product(BaseModel):
-    """
-    Products collection schema
-    Collection name: "product" (lowercase of class name)
-    """
     title: str = Field(..., description="Product title")
     description: Optional[str] = Field(None, description="Product description")
     price: float = Field(..., ge=0, description="Price in dollars")
